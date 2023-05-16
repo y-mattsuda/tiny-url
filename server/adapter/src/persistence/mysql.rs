@@ -37,8 +37,8 @@ impl Db {
 
 fn env_var(name: &str, def_var: Option<String>) -> String {
     let env_var = env::var(name);
-    return match def_var {
+    match def_var {
         Some(v) => env_var.unwrap_or(v),
-        _ => env_var.expect(format!("{name} must be set").as_str()),
-    };
+        _ => env_var.unwrap_or_else(|_| panic!("{name} must be set")),
+    }
 }
