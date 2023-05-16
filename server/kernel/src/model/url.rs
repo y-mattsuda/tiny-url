@@ -5,16 +5,31 @@ use derive_new::new;
 
 use super::Id;
 
-#[derive(new, Debug)]
+#[derive(new, Debug, Clone, PartialEq)]
 pub struct LongUrl(pub String);
 
-#[derive(new, Debug)]
+impl TryFrom<String> for LongUrl {
+    type Error = anyhow::Error;
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        Ok(LongUrl::new(value))
+    }
+}
+
+#[derive(new, Debug, Clone, PartialEq)]
 pub struct ShortUrl(pub String);
 
-impl From<LongUrl> for ShortUrl {
-    fn from(value: LongUrl) -> Self {
-        let hashed = crc32fast::hash(value.0.as_bytes());
-        Self::new(format!("{:x}", hashed))
+impl TryFrom<String> for ShortUrl {
+    type Error = anyhow::Error;
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        Ok(ShortUrl::new(value))
+    }
+}
+
+impl TryFrom<LongUrl> for ShortUrl {
+    type Error = anyhow::Error;
+    fn try_from(lu: LongUrl) -> Result<Self, Self::Error> {
+        let hashed = crc32fast::hash(lu.0.as_bytes());
+        Ok(Self::new(format!("{:x}", hashed)))
     }
 }
 
@@ -39,11 +54,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_shorten_url() {
-        let long = LongUrl::new("https://www.google.com".to_string());
-        let short = ShortUrl::from(long);
-        // CRC-32 hash function
-        // ref: https://emn178.github.io/online-tools/crc32.html
-        assert_eq!(short.0, "331e5b6b".to_string());
+    fn test_try_from_long_url_to_short_url() {
+        let long_url = LongUrl::try_from("https://www.google.com".to_string()).unwrap();
+        let short_url = ShortUrl::try_from(long_url).unwrap();
+        assert_eq!(short_url.0, "331e5b6b");
     }
 }

@@ -7,9 +7,5 @@ services:
       - "3306:3306"
     volumes:
       - "./ddl:/docker-entrypoint-initdb.d"
-    environment:
-      MYSQL_ROOT_PASSWORD: mysql
-      MYSQL_DATABASE: db
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
-    restart: always
+    env_file:
+      - ".env"
