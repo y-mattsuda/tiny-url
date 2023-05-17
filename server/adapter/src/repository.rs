@@ -4,6 +4,7 @@ use derive_new::new;
 
 use crate::persistence::mysql::Db;
 
+pub mod health_check;
 pub mod url;
 
 #[derive(new)]
