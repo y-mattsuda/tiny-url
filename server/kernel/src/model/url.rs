@@ -15,6 +15,18 @@ impl TryFrom<String> for LongUrl {
     }
 }
 
+impl LongUrl {
+    /// Generate a 5-character long hash from the long URL.
+    /// Attention! The return value of this method can collide!
+    /// So, application layer must handle collisions by searching for existing short URLs.
+    pub fn gen_hash(&self) -> String {
+        format!("{:x}", crc32fast::hash(self.0.as_bytes()))
+            .chars()
+            .take(5)
+            .collect()
+    }
+}
+
 #[derive(new, Debug, Clone, PartialEq)]
 pub struct ShortUrl(pub String);
 
@@ -22,14 +34,6 @@ impl TryFrom<String> for ShortUrl {
     type Error = anyhow::Error;
     fn try_from(value: String) -> Result<Self, Self::Error> {
         Ok(ShortUrl::new(value))
-    }
-}
-
-impl TryFrom<LongUrl> for ShortUrl {
-    type Error = anyhow::Error;
-    fn try_from(lu: LongUrl) -> Result<Self, Self::Error> {
-        let hashed = crc32fast::hash(lu.0.as_bytes());
-        Ok(Self::new(format!("{:x}", hashed)))
     }
 }
 
@@ -51,12 +55,15 @@ pub struct NewUrl {
 
 #[cfg(test)]
 mod tests {
+    use std::println;
+
     use super::*;
 
     #[test]
-    fn test_try_from_long_url_to_short_url() {
-        let long_url = LongUrl::try_from("https://www.google.com".to_string()).unwrap();
-        let short_url = ShortUrl::try_from(long_url).unwrap();
-        assert_eq!(short_url.0, "331e5b6b");
+    fn test_try_from_long_url_to_hash() {
+        let long_url = LongUrl::try_from("https://example.com".to_string()).unwrap();
+        let hash = long_url.gen_hash();
+        println!("long: {}, hash: {}", long_url.0, hash);
+        assert_eq!(hash.len(), 5);
     }
 }

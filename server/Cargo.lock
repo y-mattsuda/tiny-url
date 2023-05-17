@@ -267,6 +267,14 @@ checksum = "9c7d0618f0e0b7e8ff11427422b64564d5fb0be1940354bfe2e0529b18a9d9b8"
 [[package]]
 name = "app"
 version = "0.1.0"
+dependencies = [
+ "adapter",
+ "anyhow",
+ "derive-new",
+ "dotenv",
+ "kernel",
+ "tokio",
+]
 
 [[package]]
 name = "async-trait"
@@ -554,7 +562,6 @@ name = "driver"
 version = "0.1.0"
 dependencies = [
  "actix-web",
- "anyhow",
 ]
 
 [[package]]

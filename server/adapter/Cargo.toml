@@ -10,6 +10,8 @@ kernel = { path = "../kernel" }
 anyhow = "1.0.71"
 async-trait = "0.1.68"
 derive-new = "0.5.9"
-sqlx = { version = "0.7.0-alpha.3", features = ["runtime-tokio", "tls-rustls", "mysql", "chrono"] }
-tokio = { version = "1.28.1", features = ["rt", "macros", "test-util"] }
+sqlx = { version = "0.7.0-alpha.3", default-features = false, features = ["macros", "runtime-tokio", "tls-rustls", "mysql", "chrono"] }
+tokio = { version = "1.28.1", default-features = false, features = ["rt", "macros", "test-util"] }
+
+[dev-dependencies]
 dotenv = "0.15.0"

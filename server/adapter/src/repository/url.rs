@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use kernel::{
     model::{
-        url::{NewUrl, ShortUrl, Url},
+        url::{LongUrl, NewUrl, ShortUrl, Url},
         Id,
     },
     repository::url::UrlRepository,
@@ -77,6 +77,19 @@ impl UrlRepository for DatabaseRepositoryImpl<Url> {
         }
     }
 
+    async fn find_by_long(&self, long: &LongUrl) -> anyhow::Result<Option<Url>> {
+        let pool = self.pool.0.clone();
+        let url_table = query_as::<_, UrlTabel>("SELECT * FROM url WHERE `long` = ?")
+            .bind(long.0.clone())
+            .fetch_one(&*pool)
+            .await
+            .ok();
+        match url_table {
+            Some(ut) => Ok(Some(ut.try_into()?)),
+            None => Ok(None),
+        }
+    }
+
     async fn insert(&self, source: NewUrl) -> anyhow::Result<()> {
         let pool = self.pool.0.clone();
         let url_table: UrlTabel = source.try_into()?;
@@ -111,14 +124,14 @@ mod test {
         let repo = DatabaseRepositoryImpl::<Url>::new(db);
 
         let long = LongUrl::new("https://www.google.com".to_string());
-        let short = ShortUrl::try_from(long.clone())?;
+        let short = ShortUrl::new(long.gen_hash());
         let new_url = NewUrl::new(
             Id::<NewUrl>::gen(),
             LongUrl::new("https://www.google.com".to_string()),
             short.clone(),
         );
 
-        let _ = repo.insert(new_url).await?;
+        repo.insert(new_url).await?;
 
         let found = repo.find_by_short(&short).await?.unwrap();
         assert_eq!(found.long, long);
