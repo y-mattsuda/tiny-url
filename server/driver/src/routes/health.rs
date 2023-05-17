@@ -1,11 +1,24 @@
-use actix_web::{get, HttpResponse, Responder};
+use std::sync::Arc;
 
-#[get("/")]
-pub async fn index() -> impl Responder {
-    HttpResponse::Ok().body("Hello world")
+use actix_web::{web, HttpResponse, Responder};
+
+use crate::module::{Modules, ModulesExt};
+
+pub async fn health() -> impl Responder {
+    tracing::debug!("Access healtch checl endpoint from user!");
+    HttpResponse::NoContent()
 }
 
-#[get("/health")]
-pub async fn health() -> impl Responder {
-    HttpResponse::Ok().body("OK")
+pub async fn health_db(module: web::Data<Arc<Modules>>) -> impl Responder {
+    module
+        .health_check_use_case()
+        .diagnose_db_conn()
+        .await
+        .map_or_else(
+            |e| {
+                tracing::error!("{e:?}");
+                HttpResponse::ServiceUnavailable().finish()
+            },
+            |_| HttpResponse::NoContent().finish(),
+        )
 }
