@@ -24,3 +24,29 @@ pub async fn shorten_long_url(
             },
         )
 }
+
+pub async fn redirect_to_long_url(
+    path: web::Path<String>,
+    module: web::Data<Modules>,
+) -> impl Responder {
+    module
+        .url_use_case()
+        .find_original_long_url(&path)
+        .await
+        .map_or_else(
+            |e| {
+                tracing::error!("{e:?}");
+                HttpResponse::InternalServerError().finish()
+            },
+            |url| {
+                url.map_or_else(
+                    || HttpResponse::NotFound().finish(),
+                    |url| {
+                        HttpResponse::MovedPermanently()
+                            .append_header(("location", url.long.0))
+                            .finish()
+                    },
+                )
+            },
+        )
+}

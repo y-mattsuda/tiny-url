@@ -7,7 +7,7 @@ use crate::{
     module::Modules,
     routes::{
         health::{health, health_db},
-        url::shorten_long_url,
+        url::{redirect_to_long_url, shorten_long_url},
     },
 };
 
@@ -27,6 +27,7 @@ pub async fn startup(modules: Modules) -> anyhow::Result<()> {
                     .service(web::resource("/db").route(web::get().to(health_db))),
             )
             .service(web::resource("/shorten").route(web::post().to(shorten_long_url)))
+            .service(web::resource("/{short_url}").route(web::get().to(redirect_to_long_url)))
     })
     .bind(addr)?
     .run()

@@ -48,6 +48,11 @@ impl<R: RepositoriesModuleExt> UrlUsecase<R> {
             anyhow::bail!("failed to find url by short")
         }
     }
+
+    pub async fn find_original_long_url(&self, short_url: &str) -> anyhow::Result<Option<Url>> {
+        let short: ShortUrl = short_url.to_owned().try_into()?;
+        self.repository.url_repository().find_by_short(&short).await
+    }
 }
 
 #[cfg(test)]
