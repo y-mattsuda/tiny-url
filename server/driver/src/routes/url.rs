@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use actix_web::{web, HttpResponse, Responder};
 
 use crate::{
@@ -9,7 +7,7 @@ use crate::{
 
 pub async fn shorten_long_url(
     req_body: web::Json<JsonDataToShorten>,
-    module: web::Data<Arc<Modules>>,
+    module: web::Data<Modules>,
 ) -> impl Responder {
     module
         .url_use_case()

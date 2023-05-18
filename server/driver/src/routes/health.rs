@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use actix_web::{web, HttpResponse, Responder};
 
 use crate::module::{Modules, ModulesExt};
@@ -9,7 +7,7 @@ pub async fn health() -> impl Responder {
     HttpResponse::NoContent()
 }
 
-pub async fn health_db(module: web::Data<Arc<Modules>>) -> impl Responder {
+pub async fn health_db(module: web::Data<Modules>) -> impl Responder {
     module
         .health_check_use_case()
         .diagnose_db_conn()

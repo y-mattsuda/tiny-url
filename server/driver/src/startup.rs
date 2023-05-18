@@ -1,5 +1,5 @@
 use core::panic;
-use std::{net::SocketAddr, sync::Arc};
+use std::net::SocketAddr;
 
 use actix_web::{web, App, HttpServer};
 
@@ -11,14 +11,16 @@ use crate::{
     },
 };
 
-pub async fn startup(modules: Arc<Modules>) -> anyhow::Result<()> {
+pub async fn startup(modules: Modules) -> anyhow::Result<()> {
     let addr = SocketAddr::from(([0, 0, 0, 0], 8000));
 
     tracing::info!("Server listening on {addr}");
 
+    let data = web::Data::new(modules);
+
     HttpServer::new(move || {
         App::new()
-            .app_data(web::Data::new(modules.clone()))
+            .app_data(data.clone())
             .service(
                 web::scope("/health")
                     .service(web::resource("/").route(web::get().to(health)))
