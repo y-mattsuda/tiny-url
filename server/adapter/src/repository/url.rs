@@ -14,7 +14,7 @@ use sqlx::{
 
 use super::DatabaseRepositoryImpl;
 
-#[derive(FromRow)]
+#[derive(FromRow, Clone)]
 pub struct UrlTabel {
     pub id: String,
     pub long: String,
@@ -90,9 +90,10 @@ impl UrlRepository for DatabaseRepositoryImpl<Url> {
         }
     }
 
-    async fn insert(&self, source: NewUrl) -> anyhow::Result<()> {
+    async fn insert(&self, source: NewUrl) -> anyhow::Result<Url> {
         let pool = self.pool.0.clone();
         let url_table: UrlTabel = source.try_into()?;
+        let url: Url = url_table.clone().try_into()?;
         sqlx::query(
             "INSERT INTO url (id, `long`, short, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
         )
@@ -103,7 +104,7 @@ impl UrlRepository for DatabaseRepositoryImpl<Url> {
         .bind(url_table.updated_at)
         .execute(&*pool)
         .await?;
-        Ok(())
+        Ok(url)
     }
 }
 

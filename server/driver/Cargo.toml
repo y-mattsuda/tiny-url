@@ -8,8 +8,11 @@ edition = "2021"
 [dependencies]
 adapter = { path = "../adapter" }
 app = { path = "../app" }
+kernel = { path = "../kernel" }
 actix-web = "4.3.1"
 tracing = "0.1.37"
 tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
 dotenv = "0.15.0"
 anyhow = "1.0.71"
+serde = { version = "1.0.163", features = ["derive"] }
+validator = { version = "0.16.0", features = ["derive"] }

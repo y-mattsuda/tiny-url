@@ -5,7 +5,10 @@ use actix_web::{web, App, HttpServer};
 
 use crate::{
     module::Modules,
-    routes::health::{health, health_db},
+    routes::{
+        health::{health, health_db},
+        url::shorten_long_url,
+    },
 };
 
 pub async fn startup(modules: Arc<Modules>) -> anyhow::Result<()> {
@@ -21,6 +24,7 @@ pub async fn startup(modules: Arc<Modules>) -> anyhow::Result<()> {
                     .service(web::resource("/").route(web::get().to(health)))
                     .service(web::resource("/db").route(web::get().to(health_db))),
             )
+            .service(web::resource("/shorten").route(web::post().to(shorten_long_url)))
     })
     .bind(addr)?
     .run()

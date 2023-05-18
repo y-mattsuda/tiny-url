@@ -4,7 +4,7 @@ use adapter::modules::RepositoriesModuleExt;
 use derive_new::new;
 use kernel::{
     model::{
-        url::{LongUrl, NewUrl, ShortUrl},
+        url::{LongUrl, NewUrl, ShortUrl, Url},
         Id,
     },
     repository::url::UrlRepository,
@@ -16,12 +16,12 @@ pub struct UrlUsecase<R: RepositoriesModuleExt> {
 }
 
 impl<R: RepositoriesModuleExt> UrlUsecase<R> {
-    pub async fn get_short_url(&self, long_url: &str) -> anyhow::Result<String> {
+    pub async fn get_short_url(&self, long_url: &str) -> anyhow::Result<Url> {
         let long: LongUrl = long_url.to_owned().try_into()?;
         let repo = self.repository.url_repository();
         if let Ok(Some(u)) = repo.find_by_long(&long).await {
             // すでに対応するshort urlがあればそれを返す
-            Ok(u.short.0)
+            Ok(u)
         } else {
             // 新規にshort urlを生成
             let mut short = ShortUrl::new(long.gen_hash());
@@ -29,16 +29,9 @@ impl<R: RepositoriesModuleExt> UrlUsecase<R> {
             let mut loop_cnt = 0;
             while let Ok(res) = repo.find_by_short(&short).await {
                 if res.is_none() {
-                    // DBに保存してから返す
-                    if (repo
+                    return repo
                         .insert(NewUrl::new(Id::<NewUrl>::gen(), long, short.clone()))
-                        .await)
-                        .is_ok()
-                    {
-                        return Ok(short.0);
-                    } else {
-                        anyhow::bail!("failed to insert new url to DB")
-                    };
+                        .await;
                 }
                 // 衝突したときの処理
                 // まず, 10回以上衝突していたらエラーにする
@@ -73,11 +66,11 @@ mod test {
         let repo = Arc::new(RepositoriesModule::new(db));
         let usecase = UrlUsecase::new(repo.clone());
         let long_url = "https://example.com";
-        let short_url = usecase.get_short_url(long_url).await.unwrap();
-        println!("short url: {}", short_url);
+        let shortend = usecase.get_short_url(long_url).await.unwrap();
+        println!("shortened: {:?}", shortend);
         let url = repo
             .url_repository()
-            .find_by_short(&ShortUrl::new(short_url))
+            .find_by_short(&ShortUrl::new(shortend.short.0))
             .await
             .unwrap();
         assert_eq!(url.unwrap().long.0, long_url);
