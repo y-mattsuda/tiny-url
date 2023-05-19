@@ -1,8 +1,9 @@
 <script lang="ts">
-	import type { PageData } from './$types';
-	import { superForm } from 'sveltekit-superforms/client';
-	export let data: PageData;
-	const { form, errors, constraints } = superForm(data.form);
+	export let form;
+
+	let longUrl = '';
+
+	const host = 'http://localhost:8000/';
 </script>
 
 <svelte:head>
@@ -21,18 +22,25 @@
 		<div class="p-4">
 			<form method="POST" class="grid grid-cols-1 md:grid-cols-4 gap-4">
 				<input
-					type="text"
-					name="url"
-					data-invalid={$errors.url}
-					bind:value={$form.url}
+					type="url"
+					name="longUrl"
+					bind:value={longUrl}
 					class="input md:col-span-3"
 					placeholder="Shorten your link"
-					{...$constraints.url}
+					required
+					autocomplete="off"
 				/>
 				<button type="submit" class="btn btn-secondary normal-case">Shorten</button>
 			</form>
 		</div>
 	</div>
 	<!-- TODO: toastで表示させるように -->
-	{#if $errors.url}<span class="alert alert-error shadow-lg">{$errors.url}</span>{/if}
+	{#if form !== null}
+		{#if form?.error}<span class="alert alert-error shadow-lg">{form.error}</span>
+		{:else}
+			<p>
+				短縮後のURLは<a href="{host}{form.shortUrl}" target="_blank">{host}{form.shortUrl}</a>だよ!
+			</p>
+		{/if}
+	{/if}
 </div>

@@ -1,23 +1,26 @@
+import type { Url, UrlToShorten } from '$lib/types/index.js';
 import { fail } from '@sveltejs/kit';
-import { superValidate } from 'sveltekit-superforms/server';
-import { z } from 'zod';
+import axios from 'axios';
 
-const schema = z.object({
-	url: z.string().url()
-});
-
-export const load = async () => {
-	const form = await superValidate(schema);
-	return { form };
-};
+async function postUrlToShort(data: UrlToShorten) {
+	return axios
+		.post<Url>('http://localhost:8000/shorten', data)
+		.then((r) => r.data)
+		.catch(() => ({
+			error: 'Sorry, we failed to shorten your Long URL'
+		}));
+}
 
 export const actions = {
 	default: async ({ request }) => {
-		const form = await superValidate(request, schema);
-		console.log('POST', form);
-		if (!form.valid) {
-			return fail(400, { form });
-		}
-		return { form };
+		const data = await request.formData();
+		console.log('POST', data);
+		const longUrl = data.get('longUrl') as string | null;
+		if (longUrl === null) return fail(400);
+		const res = await postUrlToShort({
+			longUrl
+		});
+		console.log('res', res);
+		return res;
 	}
 };
