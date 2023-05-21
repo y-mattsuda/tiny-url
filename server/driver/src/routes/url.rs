@@ -1,14 +1,18 @@
 use actix_web::{web, HttpResponse, Responder};
+use validator::Validate;
 
 use crate::{
-    model::url::{JsonDataToShorten, JsonUrl},
+    model::url::{JsonUrl, JsonUrlToShorten},
     module::{Modules, ModulesExt},
 };
 
 pub async fn shorten_long_url(
-    req_body: web::Json<JsonDataToShorten>,
+    req_body: web::Json<JsonUrlToShorten>,
     module: web::Data<Modules>,
 ) -> impl Responder {
+    if let Err(e) = req_body.validate() {
+        return HttpResponse::BadRequest().json(e);
+    }
     module
         .url_use_case()
         .get_short_url(req_body.long_url.as_str())

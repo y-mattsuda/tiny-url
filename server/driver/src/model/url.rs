@@ -4,7 +4,7 @@ use validator::Validate;
 
 #[derive(Deserialize, Debug, Validate)]
 #[serde(rename_all = "camelCase")]
-pub struct JsonDataToShorten {
+pub struct JsonUrlToShorten {
     #[validate(url)]
     pub long_url: String,
 }
