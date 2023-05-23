@@ -23,7 +23,7 @@ pub async fn startup(modules: Modules) -> anyhow::Result<()> {
             .app_data(data.clone())
             .service(
                 web::scope("/health")
-                    .service(web::resource("/").route(web::get().to(health)))
+                    .service(web::resource("").route(web::get().to(health)))
                     .service(web::resource("/db").route(web::get().to(health_db))),
             )
             .service(web::resource("/shorten").route(web::post().to(shorten_long_url)))
